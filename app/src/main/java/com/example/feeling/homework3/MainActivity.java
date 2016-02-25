@@ -33,23 +33,29 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public class MainActivity extends AppCompatActivity {
+    public static final int LOCATION_ACCURACY = 45;
     public static String user_id;
     public static String nickname = "mynickname";
     public String LOG_TAG = "REQUEST LOCATION";
-    // store location to share between activities
-    private LocationData locationData = LocationData.getLocationData();
+    private LocationData locationData;
+    private boolean accuracyOK = false;
+    private boolean nicknameOK = false;
+    EditText editText;
+    Button chatButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Gets the settings, and creates a random user id if missing.
+        locationData = LocationData.getLocationData();
+
+        // Get the settings, and create a random user id if missing.
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         user_id = settings.getString("user_id", null);
 
         if (user_id == null) {
-            // Create a random user_id, and persist it.
+            // Create a random user_id, and persist to SharedPreferences.
             SecureRandomString srs = new SecureRandomString();
             user_id = srs.nextString();
             Toast.makeText(this, user_id, Toast.LENGTH_SHORT).show();
@@ -59,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             e.apply();
         }
 
-        EditText editText = (EditText) findViewById(R.id.editText);
+        editText = (EditText) findViewById(R.id.editText);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -67,12 +73,12 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                enableChatIfReady();
+                validateNickname();
             }
         });
 
         // Disable chatButton on start
-        Button chatButton = (Button) findViewById(R.id.chatButton);
+        chatButton = (Button) findViewById(R.id.chatButton);
         if (editText.getText().length() == 0) chatButton.setEnabled(false);
     }
 
@@ -81,20 +87,30 @@ public class MainActivity extends AppCompatActivity {
      * Disable it otherwise.
      */
     public void enableChatIfReady() {
-        EditText editText = (EditText) findViewById(R.id.editText);
-        Button chatButton = (Button) findViewById(R.id.chatButton);
-        boolean isReady = editText.getText().toString().length() > 0;
+        editText = (EditText) findViewById(R.id.editText);
+        chatButton = (Button) findViewById(R.id.chatButton);
+        boolean isReady = (editText.getText().toString().length() > 0) && accuracyOK;
         chatButton.setEnabled(isReady);
+    }
+
+    private void validateNickname() {
+        nicknameOK = editText.getText().toString().length() > 0;
+        Toast.makeText(this, String.valueOf(nicknameOK), Toast.LENGTH_SHORT).show();
+        chatButton.setEnabled(nicknameOK && accuracyOK);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         requestLocationUpdate();
+
+//        String acc = String.valueOf(locationData.getLocation().getAccuracy());
+//        Toast.makeText(this, acc, Toast.LENGTH_SHORT).show();
     }
 
     /**
-     * Request location update. This must be called in onResume if the user has allowed location sharing
+     * Request location update. This must be called in onResume
+     * if the user has allowed location sharing.
      */
     private void requestLocationUpdate(){
         LocationManager locationManager =
@@ -129,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause(){
         super.onPause();
-        removeLocationUpdate();//if the user has allowed location sharing we must disable location updates now
+        removeLocationUpdate();
     }
 
     /**
@@ -140,12 +156,19 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLocationChanged(Location location) {
             double newAccuracy = location.getAccuracy();
-//            Toast.makeText(getApplicationContext(), Double.toString(newAccuracy), Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    getApplicationContext(),
+                    "Accuracy: " + Double.toString(newAccuracy),
+                    Toast.LENGTH_SHORT).show();
             Log.v(LOG_TAG, Double.toString(newAccuracy));
 
-            if (newAccuracy < 100) {
-                // We replace the old estimate by this one.
+            // TO DO, THIS DOES NOT WORK
+            if (newAccuracy < LOCATION_ACCURACY) {
+                accuracyOK = true;
                 locationData.setLocation(location);
+                chatButton.setClickable(nicknameOK && accuracyOK);
+            } else {
+                accuracyOK = false;
             }
         }
 
@@ -160,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
     };
     
     public void chat(View v) {
-        EditText editText = (EditText) findViewById(R.id.editText);
+        editText = (EditText) findViewById(R.id.editText);
         String name = editText.getText().toString();
 
         Intent intent = new Intent(this, ChatActivity.class);

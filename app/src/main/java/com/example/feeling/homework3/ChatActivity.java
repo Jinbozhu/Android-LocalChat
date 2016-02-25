@@ -48,6 +48,8 @@ public class ChatActivity extends AppCompatActivity {
 
     public static MyAdapter myAdapter;
     public static ArrayList<ListElement> arrayList;
+    ListView myListView;
+    EditText chatBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,8 @@ public class ChatActivity extends AppCompatActivity {
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         user_id = prefs.getString("user_id", null);
         locationData = LocationData.getLocationData();
+        myListView = (ListView) findViewById(R.id.listView);
+        chatBox = (EditText) findViewById(R.id.chatBox);
 
         /**
          * For debug purpose.
@@ -65,7 +69,9 @@ public class ChatActivity extends AppCompatActivity {
             latitude = (float) locationData.getLocation().getLatitude();
             longitude = (float) locationData.getLocation().getLongitude();
 
-            String ll = Double.toString(locationData.getLocation().getLatitude()) + ","
+            String ll = "Latitude: "
+                    + Double.toString(locationData.getLocation().getLatitude())
+                    + "\nLongitude: "
                     + Double.toString(locationData.getLocation().getLongitude());
             Toast.makeText(this, ll, Toast.LENGTH_SHORT).show();
         }
@@ -82,7 +88,6 @@ public class ChatActivity extends AppCompatActivity {
 
         arrayList = new ArrayList<>();
         myAdapter = new MyAdapter(this, R.layout.list_element, arrayList);
-        final ListView myListView = (ListView) findViewById(R.id.listView);
         myListView.setAdapter(myAdapter);
     }
 
@@ -157,7 +162,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void send() {
-        EditText chatBox = (EditText) findViewById(R.id.chatBox);
         String message = chatBox.getText().toString();
         SecureRandomString srs = new SecureRandomString();
         String message_id = srs.nextString();
@@ -185,11 +189,11 @@ public class ChatActivity extends AppCompatActivity {
         PostMessageService service = retrofit.create(PostMessageService.class);
         Call<Message> postMessageCall
                 = service.postMessage(latitude, longitude, user_id, nickname, message, message_id);
+
         // Call retrofit asynchronously
         postMessageCall.enqueue(new Callback<Message>() {
             @Override
-            public void onResponse(Response<Message> response) {
-            }
+            public void onResponse(Response<Message> response) {}
 
             @Override
             public void onFailure(Throwable t) {
@@ -199,7 +203,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void clearChatBox() {
-        EditText chatBox = (EditText) findViewById(R.id.chatBox);
         chatBox.getText().clear();
     }
 
