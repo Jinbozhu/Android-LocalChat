@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat">Start Chat</string>
+    <string name="enterNickname">Enter your nickname:</string>
+    <string name="sendButton">send button</string>
+    <string name="refreshButton">refresh</string>
+</resources>
