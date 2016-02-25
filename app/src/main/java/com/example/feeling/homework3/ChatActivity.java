@@ -70,8 +70,7 @@ public class ChatActivity extends AppCompatActivity {
             Toast.makeText(this, ll, Toast.LENGTH_SHORT).show();
         }
 
-        View v = findViewById(R.id.sendButton);
-        refresh(v);
+        refresh();
     }
 
     @Override
@@ -81,24 +80,20 @@ public class ChatActivity extends AppCompatActivity {
         Intent intent = getIntent();
         nickname = intent.getStringExtra(MainActivity.nickname);
 
-        arrayList = new ArrayList<ListElement>();
+        arrayList = new ArrayList<>();
         myAdapter = new MyAdapter(this, R.layout.list_element, arrayList);
         final ListView myListView = (ListView) findViewById(R.id.listView);
         myListView.setAdapter(myAdapter);
-        myAdapter.notifyDataSetChanged();
-
-        myAdapter.registerDataSetObserver(new DataSetObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                myListView.setSelection(myAdapter.getCount() - 1);
-            }
-        });
     }
 
+
     public void refresh(View v) {
+        refresh();
+    }
+
+    private void refresh() {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        // set your desired log level
+        // set desired log level
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .addInterceptor(logging)
@@ -111,7 +106,6 @@ public class ChatActivity extends AppCompatActivity {
                 .build();
 
         GetMessageService service = retrofit.create(GetMessageService.class);
-
         Call<MessageResponse> getMessageCall = service.getMessage(latitude, longitude, user_id);
 
         // Call retrofit asynchronously
@@ -123,19 +117,19 @@ public class ChatActivity extends AppCompatActivity {
                     Log.i(LOG_TAG, "The result is: " + response.body().getResultList());
 
                 List<ResultList> messageList = response.body().getResultList();
-                myAdapter.clear();
+                arrayList.clear();
                 for (int i = messageList.size() - 1; i >= 0; i--) {
                     ResultList resultList = messageList.get(i);
                     String userId = resultList.getUserId();
                     String nickname = resultList.getNickname();
                     boolean self = false;
                     if (userId.equals(MainActivity.user_id)) {
-                        nickname = "Me";
+                        nickname = nickname + "(You)";
                         self = true;
                     }
                     String message = resultList.getMessage();
                     String content = nickname + ": " + message;
-                    myAdapter.add(new ListElement(content, self, ""));
+                    arrayList.add(new ListElement(content, self, ""));
                 }
 
                 myAdapter.notifyDataSetChanged();
@@ -158,8 +152,25 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void send(View v) {
+        send();
+        clearChatBox();
+    }
+
+    private void send() {
+        EditText chatBox = (EditText) findViewById(R.id.chatBox);
+        String message = chatBox.getText().toString();
+        SecureRandomString srs = new SecureRandomString();
+        String message_id = srs.nextString();
+
+        /**
+         * add the posted message to arrayList, and call notifyDataSetChanged()
+         * on ArrayAdapter, then it will be shown on the screen immediately.
+         */
+        arrayList.add(new ListElement(message, true, ""));
+        myAdapter.notifyDataSetChanged();
+
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        // set your desired log level
+        // set desired log level
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .addInterceptor(logging)
@@ -172,26 +183,19 @@ public class ChatActivity extends AppCompatActivity {
                 .build();
 
         PostMessageService service = retrofit.create(PostMessageService.class);
-
-        EditText chatBox = (EditText) findViewById(R.id.chatBox);
-        String message = chatBox.getText().toString();
-        SecureRandomString srs = new SecureRandomString();
-        String message_id = srs.nextString();
-
         Call<Message> postMessageCall
                 = service.postMessage(latitude, longitude, user_id, nickname, message, message_id);
         // Call retrofit asynchronously
         postMessageCall.enqueue(new Callback<Message>() {
             @Override
-            public void onResponse(Response<Message> response) {}
+            public void onResponse(Response<Message> response) {
+            }
+
             @Override
             public void onFailure(Throwable t) {
                 t.printStackTrace();
             }
         });
-
-        myAdapter.notifyDataSetChanged();
-        clearChatBox();
     }
 
     private void clearChatBox() {
