@@ -6,6 +6,8 @@ import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -50,6 +52,7 @@ public class ChatActivity extends AppCompatActivity {
     public static ArrayList<ListElement> arrayList;
     ListView myListView;
     EditText chatBox;
+    Button sendButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +63,19 @@ public class ChatActivity extends AppCompatActivity {
         user_id = prefs.getString("user_id", null);
         locationData = LocationData.getLocationData();
         myListView = (ListView) findViewById(R.id.listView);
+        sendButton = (Button) findViewById(R.id.sendButton);
+        sendButton.setClickable(false);
         chatBox = (EditText) findViewById(R.id.chatBox);
+        chatBox.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                checkMessageLength();
+            }
+        });
 
         /**
          * For debug purpose.
@@ -79,6 +94,13 @@ public class ChatActivity extends AppCompatActivity {
         refresh();
     }
 
+    private void checkMessageLength() {
+        if (chatBox.getText().toString().length() > 0) {
+            sendButton.setClickable(true);
+        } else {
+            sendButton.setClickable(false);
+        }
+    }
     @Override
     protected void onResume(){
         super.onResume();
@@ -161,13 +183,23 @@ public class ChatActivity extends AppCompatActivity {
         clearChatBox();
     }
 
+    /**
+     *
+     */
     private void send() {
         String message = chatBox.getText().toString();
+        /**
+         * If the message is empty, do not send message.
+         */
+        if (message.length() == 0) {
+            Toast.makeText(this, "Empty message. Type in something!", Toast.LENGTH_SHORT).show();
+            return;
+        }
         SecureRandomString srs = new SecureRandomString();
         String message_id = srs.nextString();
 
         /**
-         * add the posted message to arrayList, and call notifyDataSetChanged()
+         * Add the posted message to arrayList, and call notifyDataSetChanged()
          * on ArrayAdapter, then it will be shown on the screen immediately.
          */
         arrayList.add(new ListElement(message, true, ""));

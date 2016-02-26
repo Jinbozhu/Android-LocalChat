@@ -33,7 +33,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int LOCATION_ACCURACY = 45;
+    public static final int LOCATION_ACCURACY = 100;
     public static String user_id;
     public static String nickname = "mynickname";
     public String LOG_TAG = "REQUEST LOCATION";
@@ -166,9 +166,7 @@ public class MainActivity extends AppCompatActivity {
             if (newAccuracy < LOCATION_ACCURACY) {
                 accuracyOK = true;
                 locationData.setLocation(location);
-                chatButton.setClickable(nicknameOK && accuracyOK);
-            } else {
-                accuracyOK = false;
+//                chatButton.setClickable(nicknameOK && accuracyOK);
             }
         }
 
