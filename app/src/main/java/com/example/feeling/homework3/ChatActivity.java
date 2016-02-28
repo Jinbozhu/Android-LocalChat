@@ -225,7 +225,6 @@ public class ChatActivity extends AppCompatActivity {
         postMessageCall.enqueue(new Callback<Message>() {
             @Override
             public void onResponse(Response<Message> response) {
-                delivered = true;
                 arrayList.set(arrayList.size() - 1, new ListElement(message, nickname, true, true));
                 myAdapter.notifyDataSetChanged();
             }

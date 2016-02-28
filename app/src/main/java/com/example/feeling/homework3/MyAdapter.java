@@ -26,7 +26,6 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
 
     TextView msgText;
     TextView nicknameText;
-    ImageView imageView;
 
     public MyAdapter(Context _context, int _resource, List<ListElement> items) {
         super(_context, _resource, items);
@@ -54,22 +53,22 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
         nicknameText = (TextView) newView.findViewById(R.id.nicknameText);
         msgText.setText(element.message);
         nicknameText.setText(element.nickname);
-        imageView = (ImageView) newView.findViewById(R.id.imageView);
 
         LinearLayout singleMessageContainer
                 = (LinearLayout) newView.findViewById(R.id.singleMessageContainer);
 
-        if (element.self && element.delivered) {
+        if (element.self && element.delivered == true) {
             newView.setGravity(Gravity.RIGHT);
-            singleMessageContainer.setBackgroundResource(R.drawable.right_bubble);
-            imageView.setImageResource(R.drawable.double_tick);
-        } else if (element.self && !element.delivered) {
+            singleMessageContainer.setBackgroundResource(R.drawable.right_green);
+            nicknameText.setGravity(Gravity.RIGHT);
+        } else if (element.self && element.delivered == false) {
             newView.setGravity(Gravity.RIGHT);
-            singleMessageContainer.setBackgroundResource(R.drawable.right_bubble);
-            imageView.setImageResource(android.R.color.transparent);
+            singleMessageContainer.setBackgroundResource(R.drawable.right_gray);
+            nicknameText.setGravity(Gravity.RIGHT);
         } else {
             newView.setGravity(Gravity.LEFT);
-            singleMessageContainer.setBackgroundResource(R.drawable.left_bubble);
+            singleMessageContainer.setBackgroundResource(R.drawable.left_gray);
+            nicknameText.setGravity(Gravity.LEFT);
         }
 
         return newView;
