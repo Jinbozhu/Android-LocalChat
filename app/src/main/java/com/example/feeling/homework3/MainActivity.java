@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.feeling.homework3.response.MessageResponse;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean nicknameOK = false;
     EditText editText;
     Button chatButton;
+    TextView locationInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         locationData = LocationData.getLocationData();
+        locationInfo = (TextView) findViewById(R.id.locationInfo);
 
         // Get the settings, and create a random user id if missing.
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -103,27 +106,33 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         requestLocationUpdate();
-
-//        String acc = String.valueOf(locationData.getLocation().getAccuracy());
-//        Toast.makeText(this, acc, Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Request location update. This must be called in onResume
      * if the user has allowed location sharing.
      */
-    private void requestLocationUpdate(){
+    private void requestLocationUpdate() {
         LocationManager locationManager =
                 (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager != null) {
+
+        if (locationManager != null &&
+                (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED) {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 35000, 10, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 35000, 10, locationListener);
 
                 Log.i(LOG_TAG, "requesting location update");
             }
         }
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        removeLocationUpdate();
     }
 
     /**
@@ -140,12 +149,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(LOG_TAG, "removing location update");
             }
         }
-    }
-
-    @Override
-    public void onPause(){
-        super.onPause();
-        removeLocationUpdate();
     }
 
     /**
@@ -166,16 +169,34 @@ public class MainActivity extends AppCompatActivity {
             if (newAccuracy < LOCATION_ACCURACY) {
                 accuracyOK = true;
                 locationData.setLocation(location);
-//                chatButton.setClickable(nicknameOK && accuracyOK);
+                chatButton.setEnabled(nicknameOK && accuracyOK);
+            } else {
+                accuracyOK = false;
+                chatButton.setEnabled(nicknameOK && accuracyOK);
             }
+
+            /**
+             * Have to put this block in locationListener in order to
+             * get location on start.
+             */
+            String latlong = "Requesting location...";
+            if (locationData != null && locationData.getLocation() != null) {
+                latlong = "Latitude: "
+                        + Double.toString(locationData.getLocation().getLatitude())
+                        + ",\n"
+                        + "Longitude: "
+                        + Double.toString(locationData.getLocation().getLongitude())
+                        + ",\n"
+                        + "Accuracy: "
+                        + newAccuracy;
+            }
+            locationInfo.setText(latlong);
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {}
-
         @Override
         public void onProviderEnabled(String provider) {}
-
         @Override
         public void onProviderDisabled(String provider) {}
     };

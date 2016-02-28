@@ -14,19 +14,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/enterNickname"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="39dp" />
+        android:layout_marginTop="80dp"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/textSize" />
 
     <EditText
         android:id="@+id/editText"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView"
-        android:layout_marginTop="64dp"
-        android:layout_alignLeft="@+id/chatButton"
-        android:layout_alignStart="@+id/chatButton" />
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:id="@+id/chatButton"
@@ -34,8 +32,17 @@
         android:layout_height="wrap_content"
         android:text="@string/chat"
         android:layout_below="@+id/editText"
-        android:layout_toRightOf="@+id/textView"
-        android:layout_toEndOf="@+id/textView"
-        android:layout_marginTop="151dp"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
         android:onClick="chat"/>
+
+    <TextView
+        android:id="@+id/locationInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Requesting location Info..."
+        android:layout_below="@+id/chatButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="52dp" />
 </RelativeLayout>

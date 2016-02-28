@@ -21,6 +21,10 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
     int resource;
     Context context;
 
+    TextView textContent;
+    TextView textStatus;
+
+
     public MyAdapter(Context _context, int _resource, List<ListElement> items) {
         super(_context, _resource, items);
         resource = _resource;
@@ -43,29 +47,13 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
         }
 
         // Fills in the view.
-        TextView textContent = (TextView) singleMessageContainer.findViewById(R.id.textContent);
-        TextView textStatus = (TextView) singleMessageContainer.findViewById(R.id.textStatus);
+        textContent = (TextView) singleMessageContainer.findViewById(R.id.textContent);
+        textStatus = (TextView) singleMessageContainer.findViewById(R.id.textStatus);
         textContent.setText(element.content);
         textStatus.setText(element.status);
-
-//        Button b = (Button) singleMessageContainer.findViewById(R.id.chatButton);
-//        // Sets a listener for the button, and a tag for the button as well.
-//        b.setTag(new Integer(position));
-//        b.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Reacts to a button press.
-//                // Gets the integer tag of the button.
-//                String s = v.getTag().toString();
-//                int duration = Toast.LENGTH_SHORT;
-//                Toast toast = Toast.makeText(context, s, duration);
-//                toast.show();
-//                // Let's remove the list item.
-//                int i = Integer.parseInt(s);
-//                arrayList.remove(i);
-//                my.notifyDataSetChanged();
-//            }
-//        });
+        if (element.self) {
+            singleMessageContainer.setGravity(View.FOCUS_RIGHT);
+        }
 
         return singleMessageContainer;
     }

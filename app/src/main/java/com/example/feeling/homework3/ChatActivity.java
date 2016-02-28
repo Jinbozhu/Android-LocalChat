@@ -64,7 +64,7 @@ public class ChatActivity extends AppCompatActivity {
         locationData = LocationData.getLocationData();
         myListView = (ListView) findViewById(R.id.listView);
         sendButton = (Button) findViewById(R.id.sendButton);
-        sendButton.setClickable(false);
+        sendButton.setEnabled(false);
         chatBox = (EditText) findViewById(R.id.chatBox);
         chatBox.addTextChangedListener(new TextWatcher() {
             @Override
@@ -94,13 +94,18 @@ public class ChatActivity extends AppCompatActivity {
         refresh();
     }
 
+    /**
+     * Check the length of message in the chat box.
+     * If the length is not 0, enable send button.
+     */
     private void checkMessageLength() {
         if (chatBox.getText().toString().length() > 0) {
-            sendButton.setClickable(true);
+            sendButton.setEnabled(true);
         } else {
-            sendButton.setClickable(false);
+            sendButton.setEnabled(false);
         }
     }
+
     @Override
     protected void onResume(){
         super.onResume();
@@ -151,10 +156,11 @@ public class ChatActivity extends AppCompatActivity {
                     String nickname = resultList.getNickname();
                     boolean self = false;
                     if (userId.equals(MainActivity.user_id)) {
-                        nickname = nickname + "(You)";
+                        nickname += "(You)";
                         self = true;
                     }
                     String message = resultList.getMessage();
+
                     String content = nickname + ": " + message;
                     arrayList.add(new ListElement(content, self, ""));
                 }
@@ -188,13 +194,6 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void send() {
         String message = chatBox.getText().toString();
-        /**
-         * If the message is empty, do not send message.
-         */
-        if (message.length() == 0) {
-            Toast.makeText(this, "Empty message. Type in something!", Toast.LENGTH_SHORT).show();
-            return;
-        }
         SecureRandomString srs = new SecureRandomString();
         String message_id = srs.nextString();
 
