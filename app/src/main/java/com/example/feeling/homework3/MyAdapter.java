@@ -1,12 +1,15 @@
 package com.example.feeling.homework3;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,9 +24,9 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
     int resource;
     Context context;
 
-    TextView textContent;
-    TextView textStatus;
-
+    TextView msgText;
+    TextView nicknameText;
+    ImageView imageView;
 
     public MyAdapter(Context _context, int _resource, List<ListElement> items) {
         super(_context, _resource, items);
@@ -33,28 +36,42 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        LinearLayout singleMessageContainer;
+        LinearLayout newView;
         ListElement element = getItem(position);
 
         // Inflate a new view if necessary.
         if (convertView == null) {
-            singleMessageContainer = new LinearLayout(getContext());
+            newView = new LinearLayout(getContext());
             String inflater = Context.LAYOUT_INFLATER_SERVICE;
             LayoutInflater vi = (LayoutInflater) getContext().getSystemService(inflater);
-            vi.inflate(resource, singleMessageContainer, true);
+            vi.inflate(resource, newView, true);
         } else {
-            singleMessageContainer = (LinearLayout) convertView;
+            newView = (LinearLayout) convertView;
         }
 
         // Fills in the view.
-        textContent = (TextView) singleMessageContainer.findViewById(R.id.textContent);
-        textStatus = (TextView) singleMessageContainer.findViewById(R.id.textStatus);
-        textContent.setText(element.content);
-        textStatus.setText(element.status);
-        if (element.self) {
-            singleMessageContainer.setGravity(View.FOCUS_RIGHT);
+        msgText = (TextView) newView.findViewById(R.id.msgText);
+        nicknameText = (TextView) newView.findViewById(R.id.nicknameText);
+        msgText.setText(element.message);
+        nicknameText.setText(element.nickname);
+        imageView = (ImageView) newView.findViewById(R.id.imageView);
+
+        LinearLayout singleMessageContainer
+                = (LinearLayout) newView.findViewById(R.id.singleMessageContainer);
+
+        if (element.self && element.delivered) {
+            newView.setGravity(Gravity.RIGHT);
+            singleMessageContainer.setBackgroundResource(R.drawable.right_bubble);
+            imageView.setImageResource(R.drawable.double_tick);
+        } else if (element.self && !element.delivered) {
+            newView.setGravity(Gravity.RIGHT);
+            singleMessageContainer.setBackgroundResource(R.drawable.right_bubble);
+            imageView.setImageResource(android.R.color.transparent);
+        } else {
+            newView.setGravity(Gravity.LEFT);
+            singleMessageContainer.setBackgroundResource(R.drawable.left_bubble);
         }
 
-        return singleMessageContainer;
+        return newView;
     }
 }

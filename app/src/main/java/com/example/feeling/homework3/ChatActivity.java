@@ -53,6 +53,7 @@ public class ChatActivity extends AppCompatActivity {
     ListView myListView;
     EditText chatBox;
     Button sendButton;
+    boolean delivered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,16 +154,15 @@ public class ChatActivity extends AppCompatActivity {
                 for (int i = messageList.size() - 1; i >= 0; i--) {
                     ResultList resultList = messageList.get(i);
                     String userId = resultList.getUserId();
+                    String message = resultList.getMessage();
                     String nickname = resultList.getNickname();
                     boolean self = false;
                     if (userId.equals(MainActivity.user_id)) {
                         nickname += "(You)";
                         self = true;
                     }
-                    String message = resultList.getMessage();
 
-                    String content = nickname + ": " + message;
-                    arrayList.add(new ListElement(content, self, ""));
+                    arrayList.add(new ListElement(message, nickname, self, true));
                 }
 
                 myAdapter.notifyDataSetChanged();
@@ -193,7 +193,7 @@ public class ChatActivity extends AppCompatActivity {
      *
      */
     private void send() {
-        String message = chatBox.getText().toString();
+        final String message = chatBox.getText().toString();
         SecureRandomString srs = new SecureRandomString();
         String message_id = srs.nextString();
 
@@ -201,7 +201,7 @@ public class ChatActivity extends AppCompatActivity {
          * Add the posted message to arrayList, and call notifyDataSetChanged()
          * on ArrayAdapter, then it will be shown on the screen immediately.
          */
-        arrayList.add(new ListElement(message, true, ""));
+        arrayList.add(new ListElement(message, nickname, true, false));
         myAdapter.notifyDataSetChanged();
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -224,7 +224,11 @@ public class ChatActivity extends AppCompatActivity {
         // Call retrofit asynchronously
         postMessageCall.enqueue(new Callback<Message>() {
             @Override
-            public void onResponse(Response<Message> response) {}
+            public void onResponse(Response<Message> response) {
+                delivered = true;
+                arrayList.set(arrayList.size() - 1, new ListElement(message, nickname, true, true));
+                myAdapter.notifyDataSetChanged();
+            }
 
             @Override
             public void onFailure(Throwable t) {
