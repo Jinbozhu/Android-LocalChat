@@ -57,18 +57,18 @@ public class MyAdapter extends ArrayAdapter<ListElement> {
         LinearLayout singleMessageContainer
                 = (LinearLayout) newView.findViewById(R.id.singleMessageContainer);
 
-        if (element.self && element.delivered == true) {
-            newView.setGravity(Gravity.RIGHT);
-            singleMessageContainer.setBackgroundResource(R.drawable.right_green);
-            nicknameText.setGravity(Gravity.RIGHT);
-        } else if (element.self && element.delivered == false) {
-            newView.setGravity(Gravity.RIGHT);
+        if (element.self && !element.delivered) {
+            newView.setGravity(Gravity.END);
             singleMessageContainer.setBackgroundResource(R.drawable.right_gray);
-            nicknameText.setGravity(Gravity.RIGHT);
+            nicknameText.setGravity(Gravity.END);
+        } else if (element.self && element.delivered) {
+            newView.setGravity(Gravity.END);
+            singleMessageContainer.setBackgroundResource(R.drawable.right_green);
+            nicknameText.setGravity(Gravity.END);
         } else {
-            newView.setGravity(Gravity.LEFT);
+            newView.setGravity(Gravity.START);
             singleMessageContainer.setBackgroundResource(R.drawable.left_gray);
-            nicknameText.setGravity(Gravity.LEFT);
+            nicknameText.setGravity(Gravity.START);
         }
 
         return newView;

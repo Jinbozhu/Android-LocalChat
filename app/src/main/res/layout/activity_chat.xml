@@ -12,6 +12,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:divider="@null"
         android:layout_above="@+id/chatBox"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll" />
@@ -21,11 +22,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sendButton"
-        android:layout_marginBottom="43dp"
+        android:onClick="send"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="send" />
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/refreshButton"
+        />
 
     <EditText
         android:id="@+id/chatBox"
@@ -33,18 +34,20 @@
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:ems="10"
-        android:layout_alignBottom="@+id/sendButton"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/sendButton"/>
 
     <ImageButton
         android:id="@+id/refreshButton"
         android:layout_width="@dimen/refreshButtonSize"
         android:layout_height="@dimen/refreshButtonSize"
-        android:layout_below="@+id/chatBox"
-        android:layout_alignRight="@+id/sendButton"
-        android:layout_alignEnd="@+id/sendButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
         android:onClick="refresh"
-        android:src="@drawable/refresh_button" />
+        android:src="@drawable/refresh_button"
+        android:layout_alignTop="@+id/sendButton" />
 
 </RelativeLayout>

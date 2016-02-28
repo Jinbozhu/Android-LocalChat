@@ -6,18 +6,14 @@
 
     <TextView
         android:id="@+id/nicknameText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right"
         android:text="Medium" />
 
     <LinearLayout
         android:id="@+id/singleMessageContainer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/right_gray"
-        android:orientation="vertical"
-        android:layout_gravity="center_vertical">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/msgText"
@@ -26,6 +22,5 @@
             android:text="Medium Text" />
 
     </LinearLayout>
-
 
 </LinearLayout>

@@ -34,13 +34,13 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int LOCATION_ACCURACY = 100;
+    public static final int LOCATION_ACCURACY_THRESHOLD = 100;
     public static String user_id;
     public static String nickname = "mynickname";
     public String LOG_TAG = "REQUEST LOCATION";
     private LocationData locationData;
-    private boolean accuracyOK = false;
-    private boolean nicknameOK = false;
+    private boolean accuracyOK;
+    private boolean nicknameOK;
     EditText editText;
     Button chatButton;
     TextView locationInfo;
@@ -53,21 +53,20 @@ public class MainActivity extends AppCompatActivity {
         locationData = LocationData.getLocationData();
         locationInfo = (TextView) findViewById(R.id.locationInfo);
 
-        // Get the settings, and create a random user id if missing.
+        // Get user_id from SharedPreferences.
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         user_id = settings.getString("user_id", null);
 
+        // If user_id is null, create a random one and persist to SharedPreferences.
         if (user_id == null) {
-            // Create a random user_id, and persist to SharedPreferences.
             SecureRandomString srs = new SecureRandomString();
             user_id = srs.nextString();
-            Toast.makeText(this, user_id, Toast.LENGTH_SHORT).show();
-
             SharedPreferences.Editor e = settings.edit();
             e.putString("user_id", user_id);
             e.apply();
         }
 
+        chatButton = (Button) findViewById(R.id.chatButton);
         editText = (EditText) findViewById(R.id.editText);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -76,29 +75,17 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                validateNickname();
+                enableChatButton();
             }
         });
-
-        // Disable chatButton on start
-        chatButton = (Button) findViewById(R.id.chatButton);
-        if (editText.getText().length() == 0) chatButton.setEnabled(false);
     }
 
     /**
-     * Enable chat button if the word length in editText is not 0.
-     * Disable it otherwise.
+     * Enable chat button if the word length in editText is not 0
+     * and accuracy is good enough, disable it otherwise.
      */
-    public void enableChatIfReady() {
-        editText = (EditText) findViewById(R.id.editText);
-        chatButton = (Button) findViewById(R.id.chatButton);
-        boolean isReady = (editText.getText().toString().length() > 0) && accuracyOK;
-        chatButton.setEnabled(isReady);
-    }
-
-    private void validateNickname() {
+    private void enableChatButton() {
         nicknameOK = editText.getText().toString().length() > 0;
-        Toast.makeText(this, String.valueOf(nicknameOK), Toast.LENGTH_SHORT).show();
         chatButton.setEnabled(nicknameOK && accuracyOK);
     }
 
@@ -152,27 +139,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Listens to the location, and gets the most precise recent location.
-     * Copied from Prof. Luca class code
+     * Listen to the location, get the location accuracy
+     * and display latitude, longitude, and accuracy on screen.
+     *
+     * Disable chat button if accuracy is not good enough.
      */
     LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            double newAccuracy = location.getAccuracy();
-            Toast.makeText(
-                    getApplicationContext(),
-                    "Accuracy: " + Double.toString(newAccuracy),
-                    Toast.LENGTH_SHORT).show();
-            Log.v(LOG_TAG, Double.toString(newAccuracy));
+            double accuracy = location.getAccuracy();
+            Log.v(LOG_TAG, Double.toString(accuracy));
 
-            // TO DO, THIS DOES NOT WORK
-            if (newAccuracy < LOCATION_ACCURACY) {
+            if (accuracy < LOCATION_ACCURACY_THRESHOLD) {
                 accuracyOK = true;
                 locationData.setLocation(location);
                 chatButton.setEnabled(nicknameOK && accuracyOK);
             } else {
                 accuracyOK = false;
-                chatButton.setEnabled(nicknameOK && accuracyOK);
+                chatButton.setEnabled(false);
             }
 
             /**
@@ -188,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                         + Double.toString(locationData.getLocation().getLongitude())
                         + ",\n"
                         + "Accuracy: "
-                        + newAccuracy;
+                        + accuracy;
             }
             locationInfo.setText(latlong);
         }

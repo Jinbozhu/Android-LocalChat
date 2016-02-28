@@ -53,7 +53,6 @@ public class ChatActivity extends AppCompatActivity {
     ListView myListView;
     EditText chatBox;
     Button sendButton;
-    boolean delivered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,20 +76,6 @@ public class ChatActivity extends AppCompatActivity {
                 checkMessageLength();
             }
         });
-
-        /**
-         * For debug purpose.
-         */
-        if (locationData != null && locationData.getLocation() != null) {
-            latitude = (float) locationData.getLocation().getLatitude();
-            longitude = (float) locationData.getLocation().getLongitude();
-
-            String ll = "Latitude: "
-                    + Double.toString(locationData.getLocation().getLatitude())
-                    + "\nLongitude: "
-                    + Double.toString(locationData.getLocation().getLongitude());
-            Toast.makeText(this, ll, Toast.LENGTH_SHORT).show();
-        }
 
         refresh();
     }
@@ -223,6 +208,13 @@ public class ChatActivity extends AppCompatActivity {
 
         // Call retrofit asynchronously
         postMessageCall.enqueue(new Callback<Message>() {
+            /**
+             * Update arrayList and notify arrayAdapter when we get
+             * response from HTTP server. In this way, we can change
+             * the status of message on the screen.
+             *
+             * @param response
+             */
             @Override
             public void onResponse(Response<Message> response) {
                 arrayList.set(arrayList.size() - 1, new ListElement(message, nickname, true, true));
@@ -236,6 +228,9 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Clear chat box when send button is clicked.
+     */
     private void clearChatBox() {
         chatBox.getText().clear();
     }
