@@ -1,7 +1,5 @@
 package com.example.feeling.homework3;
 
-import retrofit2.http.Query;
-
 /**
  * Created by feeling on 2/18/16.
  */

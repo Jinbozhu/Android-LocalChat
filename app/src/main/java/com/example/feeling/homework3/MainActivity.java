@@ -163,18 +163,16 @@ public class MainActivity extends AppCompatActivity {
              * Have to put this block in locationListener in order to
              * get location on start.
              */
-            String latlong = "Requesting location...";
+            String loc = "Requesting location...";
             if (locationData != null && locationData.getLocation() != null) {
-                latlong = "Latitude: "
-                        + Double.toString(locationData.getLocation().getLatitude())
-                        + ",\n"
-                        + "Longitude: "
-                        + Double.toString(locationData.getLocation().getLongitude())
-                        + ",\n"
-                        + "Accuracy: "
-                        + accuracy;
+                double latitude = locationData.getLocation().getLatitude();
+                double longitude = locationData.getLocation().getLongitude();
+                String lat = String.format("%10.5f", latitude);
+                String lgn = String.format("%10.5f", longitude);
+                String acc = String.format("%5.1f m", accuracy);
+                loc = "Latitude:\t" + lat + ",\nLongitude:\t" + lgn + ",\nAccuracy:\t" + acc;
             }
-            locationInfo.setText(latlong);
+            locationInfo.setText(loc);
         }
 
         @Override

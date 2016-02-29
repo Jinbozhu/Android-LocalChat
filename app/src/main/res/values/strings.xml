@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Homework3</string>
+    <string name="app_name">Local Chat</string>
     <string name="chat">Start Chat</string>
     <string name="enterNickname">Enter your nickname:</string>
     <string name="sendButton">send</string>

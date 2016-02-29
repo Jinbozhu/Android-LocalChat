@@ -39,17 +39,18 @@ import retrofit2.http.Query;
  * Created by feeling on 2/17/16.
  */
 public class ChatActivity extends AppCompatActivity {
+    public static String LOG_TAG = "My Logggggggg";
+
     private LocationData locationData;
     private float latitude;
     private float longitude;
-    public static String LOG_TAG = "My Logggggggg";
 
     SharedPreferences prefs;
-    private static String nickname;
-    private static String user_id;
+    private String nickname;
+    private String user_id;
 
-    public static MyAdapter myAdapter;
-    public static ArrayList<ListElement> arrayList;
+    public MyAdapter myAdapter;
+    public ArrayList<ListElement> arrayList;
     ListView myListView;
     EditText chatBox;
     Button sendButton;
@@ -59,10 +60,26 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        // Get user_id from SharedPreferences.
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         user_id = prefs.getString("user_id", null);
+
+        // Get nickname from Intent.
+        Intent intent = getIntent();
+        nickname = intent.getStringExtra(MainActivity.nickname);
+
+        // Get latitude and longitude from Singleton class locationData.
         locationData = LocationData.getLocationData();
+        if (locationData != null && locationData.getLocation() != null) {
+            latitude = (float) locationData.getLocation().getLatitude();
+            longitude = (float) locationData.getLocation().getLongitude();
+        }
+
+        arrayList = new ArrayList<>();
+        myAdapter = new MyAdapter(this, R.layout.list_element, arrayList);
         myListView = (ListView) findViewById(R.id.listView);
+        myListView.setAdapter(myAdapter);
+
         sendButton = (Button) findViewById(R.id.sendButton);
         sendButton.setEnabled(false);
         chatBox = (EditText) findViewById(R.id.chatBox);
@@ -92,19 +109,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onResume(){
-        super.onResume();
-
-        Intent intent = getIntent();
-        nickname = intent.getStringExtra(MainActivity.nickname);
-
-        arrayList = new ArrayList<>();
-        myAdapter = new MyAdapter(this, R.layout.list_element, arrayList);
-        myListView.setAdapter(myAdapter);
-    }
-
-
     public void refresh(View v) {
         refresh();
     }
@@ -123,7 +127,7 @@ public class ChatActivity extends AppCompatActivity {
                 .client(httpClient)     //add logging
                 .build();
 
-        GetMessageService service = retrofit.create(GetMessageService.class);
+        MessageService service = retrofit.create(MessageService.class);
         Call<MessageResponse> getMessageCall = service.getMessage(latitude, longitude, user_id);
 
         // Call retrofit asynchronously
@@ -160,23 +164,36 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    public interface GetMessageService {
+    public interface MessageService {
         @GET("get_messages")
         Call<MessageResponse> getMessage(
                 @Query("lat") float latitude,
                 @Query("lng") float longitude,
                 @Query("user_id") String user_id
         );
+
+        @POST("post_message")
+        Call<Message> postMessage(
+                @Query("lat") float latitude,
+                @Query("lng") float longitude,
+                @Query("user_id") String user_id,
+                @Query("nickname") String nickname,
+                @Query("message") String message,
+                @Query("message_id") String message_id
+        );
     }
 
+    /**
+     * This function is called when send button is clicked.
+     * After call send(), it will clear the message in chat box.
+     *
+     * @param v
+     */
     public void send(View v) {
         send();
         clearChatBox();
     }
 
-    /**
-     *
-     */
     private void send() {
         final String message = chatBox.getText().toString();
         SecureRandomString srs = new SecureRandomString();
@@ -202,7 +219,7 @@ public class ChatActivity extends AppCompatActivity {
                 .client(httpClient)     //add logging
                 .build();
 
-        PostMessageService service = retrofit.create(PostMessageService.class);
+        MessageService service = retrofit.create(MessageService.class);
         Call<Message> postMessageCall
                 = service.postMessage(latitude, longitude, user_id, nickname, message, message_id);
 
@@ -219,6 +236,14 @@ public class ChatActivity extends AppCompatActivity {
             public void onResponse(Response<Message> response) {
                 arrayList.set(arrayList.size() - 1, new ListElement(message, nickname, true, true));
                 myAdapter.notifyDataSetChanged();
+
+                /**
+                 * Call refresh after we get response from the server
+                 * to update the messages on the screen again.
+                 *
+                 * What it does is append "(You)" to nickname.
+                 */
+                refresh();
             }
 
             @Override
@@ -233,17 +258,5 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void clearChatBox() {
         chatBox.getText().clear();
-    }
-
-    public interface PostMessageService {
-        @POST("post_message")
-        Call<Message> postMessage(
-                @Query("lat") float latitude,
-                @Query("lng") float longitude,
-                @Query("user_id") String user_id,
-                @Query("nickname") String nickname,
-                @Query("message") String message,
-                @Query("message_id") String message_id
-        );
     }
 }
